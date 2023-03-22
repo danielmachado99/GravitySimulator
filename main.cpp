@@ -9,17 +9,17 @@ using namespace std;
 class object
 {
 private:
-    float mass = 0;
+    double mass = 0;
     float velocity_x = 0;
     float velocity_y = 0;
-    float x_position = 0;
-    float y_position = 0;
+    double x_position = 0;
+    double y_position = 0;
 
 public:
-    object(vector<object> &objects, float mass, float velocity_x = 0,
+    object(vector<object> &objects, double mass, float velocity_x = 0,
            float velocity_y = 0,
-           float x_position = 0,
-           float y_position = 0)
+           double x_position = 0,
+           double y_position = 0)
     {
         (*this).mass = mass;
         (*this).velocity_x = velocity_x;
@@ -31,15 +31,15 @@ public:
         //   this->mass=mass;
     }
 
-    float getmass()
+    double getmass()
     {
         return ((*this).mass);
     }
-    float get_x_position()
+    double get_x_position()
     {
         return ((*this).x_position);
     }
-    float get_y_position()
+    double get_y_position()
     {
         return ((*this).y_position);
     }
@@ -95,25 +95,25 @@ void calculateUpdateVelocity(vector<object> &objects, float timestep)
             if (j != i)
             {
 
-                float distancemagnitude = pow(objects.at(i).get_x_position() - objects.at(j).get_x_position(), 2);
+                double distancemagnitude = pow(objects.at(i).get_x_position() - objects.at(j).get_x_position(), 2);
                 distancemagnitude = distancemagnitude + pow(objects.at(i).get_y_position() - objects.at(j).get_y_position(), 2);
-                distancemagnitude = abs(sqrt(distancemagnitude));
+                distancemagnitude = sqrt(distancemagnitude);
+                distancemagnitude = abs(distancemagnitude);
+                double force = g * (objects.at(j)).getmass() / pow(distancemagnitude, 2);
 
-                float force = g * (objects.at(j)).getmass() * (objects.at(i)).getmass();
+                force = force * (objects.at(i)).getmass();
 
-                force = force / pow(distancemagnitude, 2);
-
-                float x_vector = objects.at(i).get_x_position() - objects.at(j).get_x_position();
+                double x_vector = objects.at(i).get_x_position() - objects.at(j).get_x_position();
 
                 x_vector = -x_vector / distancemagnitude;
-                // cout << "Force:" << force << "N  | " << endl;
+                cout << "Force:" << force << "N  | " << endl;
                 //  x_vector = abs(x_vector);
                 cout << "x_vector:" << x_vector << "N  | " << endl;
                 float y_vector = objects.at(i).get_y_position() - objects.at(j).get_y_position();
                 y_vector = -y_vector / distancemagnitude;
                 // y_vector = abs(y_vector);
 
-                float acceleration = force / objects.at(i).getmass();
+                double acceleration = force / objects.at(i).getmass();
                 // cout << acceleration * timestep * x_vector << "   " << acceleration * timestep * y_vector << endl;
                 objects.at(i).set_x_velocity(acceleration * timestep * x_vector);
                 objects.at(i).set_y_velocity(acceleration * timestep * y_vector);
@@ -129,11 +129,19 @@ void calcualteUpdatePosition(vector<object> &objects, Draw example, float timest
     {
         objects.at(i).set_x_position(timestep);
         objects.at(i).set_y_position(timestep);
-        cout << "Object:" << i << "| Position:" << objects.at(i).get_x_position() << ", " << objects.at(i).get_y_position() << "| Velocity:" << objects.at(i).get_x_velocity() << "ms, " << objects.at(i).get_y_velocity() << endl;
+        cout << "Object:" << i << "| Position:" << objects.at(i).get_x_position() + 400 << ", " << objects.at(i).get_y_position() + 300 << "| Velocity:" << objects.at(i).get_x_velocity() << "ms, " << objects.at(i).get_y_velocity() << endl;
 
         // cout << i << " vel- " << objects.at(i).get_x_velocity() << "ms, " << objects.at(i).get_y_velocity() << endl;
-        example.SetRenderDrawColor(255, 255, 255, 255);
-        example.RenderDrawPoint((int)objects.at(i).get_x_position(), (int)objects.at(i).get_y_position());
+        if (i == 2)
+        {
+            example.SetRenderDrawColor(255, 255, 0, 255);
+        }
+        else
+        {
+            example.SetRenderDrawColor(255, 255, 255, 255);
+        }
+
+        example.RenderDrawPoint((int)((objects.at(i).get_x_position() / pow(10, 9)) + 400), (int)((objects.at(i).get_y_position() / pow(10, 9)) + 300));
     }
 
     return;
@@ -144,20 +152,24 @@ int main(int argc, char *argv[])
 
     try
     {
-        float timestep = 0.1;
+        float timestep = 86400;
 
         vector<object> objects;
         // vector<Draw> drawings;
         Draw example;
-        object one(objects, pow(10, 15), 0, 0, 400, 300);
-        object two(objects, pow(10, 1), 0, -25, +50 + 400, +50 + 300);
-
+        object Sun(objects, 1.988 * pow(10, 30), 0, 0, 0, 0);
+        cout << 1.988 * pow(10, 30) << endl;
+        object Earth(objects, 5.97 * pow(10, 24), 0, -29800.0, 150.0 * pow(10, 9), 0);
+        // object spacecraft(objects, 500, +7000, -29800.0 - 7000, (150.0 * pow(10, 9)) + 7000, 0);
+        object Mercury(objects, 3.285 * pow(10, 23), 0, -47900.0, 50.0 * pow(10, 9), 0);
         std::cout << "past example" << std::endl;
-        for (size_t i = 0; i < 255; i++)
+        for (size_t i = 0; i < 365; i++)
         {
             calculateUpdateVelocity(objects, timestep);
             calcualteUpdatePosition(objects, example, timestep, i);
             example.RenderPresent();
+            char s;
+            std::cin >> s;
         }
 
         char s;
